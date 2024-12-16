@@ -39,9 +39,7 @@ class Log:
         :param msg: the message string to be written to the log file
         """
         if not os.path.isfile(self.log_dir + "/log.txt"):
-            open(
-                self.log_dir + "/log.txt", "w"
-            ).close()  # make log file empty if it already exists
+            open(self.log_dir + "/log.txt", "w").close()  # make log file empty if it already exists
         with open(self.log_dir + "/log.txt", "a") as f:
             f.write(msg + "\n")
 

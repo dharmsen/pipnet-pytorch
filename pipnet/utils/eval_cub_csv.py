@@ -12,9 +12,7 @@ from vis_pipnet import get_img_coordinates
 # Evaluates purity of CUB prototypes from csv file.
 # General method that can be used for other part-prototype methods as well
 # Assumes that coordinates in csv file apply to a 224x224 image!
-def eval_prototypes_cub_parts_csv(
-    csvfile, parts_loc_path, parts_name_path, imgs_id_path, epoch, args, log
-):
+def eval_prototypes_cub_parts_csv(csvfile, parts_loc_path, parts_name_path, imgs_id_path, epoch, args, log):
     patchsize, _ = get_patch_size(args)
     imgresize = float(args.image_size)
     path_to_id = dict()
@@ -127,9 +125,7 @@ def eval_prototypes_cub_parts_csv(
                     else:
                         if pair[1] not in proto_parts_presences[p].keys():
                             proto_parts_presences[p][pair[1]] = []
-                        proto_parts_presences[p][pair[1]].append(
-                            proto_parts_presences[p][pair[0]][-1]
-                        )
+                        proto_parts_presences[p][pair[1]].append(proto_parts_presences[p][pair[0]][-1])
                         del proto_parts_presences[p][pair[0]]
 
     print("\n Eval CUB Parts - Epoch: ", epoch, flush=True)
@@ -152,7 +148,8 @@ def eval_prototypes_cub_parts_csv(
         part_most_present[proto] = ("0", 0)
         most_often_present_purity[proto] = 0.0
 
-        # CUB parts 7,8 and 9 are  duplicate (right and left). additional check that these should not occur (already fixed earlier in this function)
+        # CUB parts 7,8 and 9 are  duplicate (right and left).
+        # additional check that these should not occur (already fixed earlier in this function)
         if (
             "7" in proto_parts_presences[proto].keys()
             or "8" in proto_parts_presences[proto].keys()
@@ -254,9 +251,7 @@ def get_proto_patches_cub(net, projectloader, epoch, device, args, threshold=0.5
 
     proto_img_coordinates = []
 
-    csvfilepath = os.path.join(
-        args.log_dir, str(epoch) + "_pipnet_prototypes_cub_all.csv"
-    )
+    csvfilepath = os.path.join(args.log_dir, str(epoch) + "_pipnet_prototypes_cub_all.csv")
     columns = [
         "prototype",
         "img name",
@@ -267,7 +262,8 @@ def get_proto_patches_cub(net, projectloader, epoch, device, args, threshold=0.5
     ]
     with open(csvfilepath, "w", newline="") as csvfile:
         print(
-            "Collecting Prototype Image Patches for Evaluating CUB part purity. Writing CSV file with image patche coordinates..",
+            "Collecting Prototype Image Patches for Evaluating CUB part purity."
+            " Writing CSV file with image patche coordinates.",
             flush=True,
         )
         writer = csv.writer(csvfile, delimiter=",")
@@ -291,25 +287,17 @@ def get_proto_patches_cub(net, projectloader, epoch, device, args, threshold=0.5
 
                 for prototype in range(net.module._num_prototypes):
                     c_weight = torch.max(classification_weights[:, prototype])
-                    if (
-                        c_weight > 1e-5
-                    ):  # ignore prototypes that are not relevant to any class
-                        if (
-                            pooled[prototype].item() > threshold
-                        ):  # similarity score > threshold
-                            location_h, location_h_idx = torch.max(
-                                pfs[prototype, :, :], dim=0
-                            )
+                    if c_weight > 1e-5:  # ignore prototypes that are not relevant to any class
+                        if pooled[prototype].item() > threshold:  # similarity score > threshold
+                            location_h, location_h_idx = torch.max(pfs[prototype, :, :], dim=0)
                             _, location_w_idx = torch.max(location_h, dim=0)
-                            h_coor_min, h_coor_max, w_coor_min, w_coor_max = (
-                                get_img_coordinates(
-                                    args.image_size,
-                                    pfs.shape,
-                                    patchsize,
-                                    skip,
-                                    location_h_idx[location_w_idx].item(),
-                                    location_w_idx.item(),
-                                )
+                            h_coor_min, h_coor_max, w_coor_min, w_coor_max = get_img_coordinates(
+                                args.image_size,
+                                pfs.shape,
+                                patchsize,
+                                skip,
+                                location_h_idx[location_w_idx].item(),
+                                location_w_idx.item(),
                             )
                             proto_img_coordinates.append(
                                 [
@@ -355,17 +343,13 @@ def get_topk_cub(net, projectloader, k, epoch, device, args):
             pfs = pfs.squeeze(0)
             for p in range(pooled.shape[0]):
                 c_weight = torch.max(classification_weights[:, p])
-                if (
-                    c_weight > 1e-5
-                ):  # ignore prototypes that are not relevant to any class
+                if c_weight > 1e-5:  # ignore prototypes that are not relevant to any class
                     if p not in scores_per_prototype:
                         scores_per_prototype[p] = []
                     scores_per_prototype[p].append((i, pooled[p].item()))
 
     proto_img_coordinates = []
-    csvfilepath = os.path.join(
-        args.log_dir, str(epoch) + "_pipnet_prototypes_cub_topk.csv"
-    )
+    csvfilepath = os.path.join(args.log_dir, str(epoch) + "_pipnet_prototypes_cub_topk.csv")
     too_small = set()
     protoype_iter = tqdm(
         enumerate(scores_per_prototype.keys()),
@@ -388,9 +372,7 @@ def get_topk_cub(net, projectloader, k, epoch, device, args):
             ]
         )
         for _, prototype in protoype_iter:
-            df = pd.DataFrame(
-                scores_per_prototype[prototype], columns=["img_id", "scores"]
-            )
+            df = pd.DataFrame(scores_per_prototype[prototype], columns=["img_id", "scores"])
             topk = df.nlargest(k, "scores")
             for index, row in topk.iterrows():
                 imgid = int(row["img_id"])
@@ -409,15 +391,13 @@ def get_topk_cub(net, projectloader, k, epoch, device, args):
                         location_h_idx[location_w_idx].item(),
                         location_w_idx.item(),
                     )
-                    h_coor_min, h_coor_max, w_coor_min, w_coor_max = (
-                        get_img_coordinates(
-                            args.image_size,
-                            pfs.shape,
-                            patchsize,
-                            skip,
-                            location[0],
-                            location[1],
-                        )
+                    h_coor_min, h_coor_max, w_coor_min, w_coor_max = get_img_coordinates(
+                        args.image_size,
+                        pfs.shape,
+                        patchsize,
+                        skip,
+                        location[0],
+                        location[1],
                     )
                     proto_img_coordinates.append(
                         [
@@ -434,7 +414,9 @@ def get_topk_cub(net, projectloader, k, epoch, device, args):
                 writer.writerows(proto_img_coordinates)
                 proto_img_coordinates = []
         print(
-            "Warning: image patches included in topk, but similarity < 0.1! This might unfairly reduce the purity metric because prototype has less than k similar image patches. You could consider reducing k for prototypes",
+            "Warning: image patches included in topk, but similarity < 0.1!"
+            " This might unfairly reduce the purity metric because prototype has less than k similar image patches."
+            " You could consider reducing k for prototypes",
             too_small,
             flush=True,
         )

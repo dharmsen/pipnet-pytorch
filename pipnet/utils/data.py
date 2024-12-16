@@ -101,23 +101,16 @@ def get_dataloaders(args: argparse.Namespace, device):
 
     if args.weighted_loss:
         if targets is None:
-            raise ValueError(
-                "Weighted loss not implemented for this dataset. Targets should be restructured"
-            )
+            raise ValueError("Weighted loss not implemented for this dataset. Targets should be restructured")
         # https://discuss.pytorch.org/t/dataloader-using-subsetrandomsampler-and-weightedrandomsampler-at-the-same-time/29907
         class_sample_count = torch.tensor(
-            [
-                (targets[train_indices] == t).sum()
-                for t in torch.unique(targets, sorted=True)
-            ]
+            [(targets[train_indices] == t).sum() for t in torch.unique(targets, sorted=True)]
         )
         weight = 1.0 / class_sample_count.float()
         print("Weights for weighted sampler: ", weight, flush=True)
         samples_weight = torch.tensor([weight[t] for t in targets[train_indices]])
         # Create sampler, dataset, loader
-        sampler = torch.utils.data.WeightedRandomSampler(
-            samples_weight, len(samples_weight), replacement=True
-        )
+        sampler = torch.utils.data.WeightedRandomSampler(samples_weight, len(samples_weight), replacement=True)
         to_shuffle = False
 
     pretrain_batchsize = args.batch_size_pretrain
@@ -265,14 +258,10 @@ def create_datasets(
             flush=True,
         )
     else:
-        testset = torchvision.datasets.ImageFolder(
-            test_dir, transform=transform_no_augment
-        )
+        testset = torchvision.datasets.ImageFolder(test_dir, transform=transform_no_augment)
 
     trainset = torch.utils.data.Subset(
-        TwoAugSupervisedDataset(
-            trainvalset, transform1=transform1, transform2=transform2
-        ),
+        TwoAugSupervisedDataset(trainvalset, transform1=transform1, transform2=transform2),
         indices=train_indices,
     )
     trainset_normal = torch.utils.data.Subset(
@@ -280,19 +269,13 @@ def create_datasets(
         indices=train_indices,
     )
     trainset_normal_augment = torch.utils.data.Subset(
-        torchvision.datasets.ImageFolder(
-            train_dir, transform=transforms.Compose([transform1, transform2])
-        ),
+        torchvision.datasets.ImageFolder(train_dir, transform=transforms.Compose([transform1, transform2])),
         indices=train_indices,
     )
-    projectset = torchvision.datasets.ImageFolder(
-        project_dir, transform=transform_no_augment
-    )
+    projectset = torchvision.datasets.ImageFolder(project_dir, transform=transform_no_augment)
 
     if test_dir_projection is not None:
-        testset_projection = torchvision.datasets.ImageFolder(
-            test_dir_projection, transform=transform_no_augment
-        )
+        testset_projection = torchvision.datasets.ImageFolder(test_dir_projection, transform=transform_no_augment)
     else:
         testset_projection = testset
     if train_dir_pretrain is not None:
@@ -310,9 +293,7 @@ def create_datasets(
             )
 
         trainset_pretraining = torch.utils.data.Subset(
-            TwoAugSupervisedDataset(
-                trainvalset_pr, transform1=transform1p, transform2=transform2
-            ),
+            TwoAugSupervisedDataset(trainvalset_pr, transform1=transform1p, transform2=transform2),
             indices=train_indices_pr,
         )
     else:
@@ -446,7 +427,7 @@ def get_birds(
     train_dir_pretrain=None,
     test_dir_projection=None,
 ):
-    shape = (3, img_size, img_size)
+    shape = (3, img_size, img_size)  # noqa: F841
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
     normalize = transforms.Normalize(mean=mean, std=std)
@@ -509,7 +490,7 @@ def get_cars(
     seed: int,
     validation_size: float,
 ):
-    shape = (3, img_size, img_size)
+    shape = (3, img_size, img_size)  # noqa: F841
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
 
@@ -635,7 +616,9 @@ class TwoAugSupervisedDataset(torch.utils.data.Dataset):
         return len(self.dataset)
 
 
-# function copied from https://pytorch.org/vision/stable/_modules/torchvision/transforms/autoaugment.html#TrivialAugmentWide (v0.12) and adapted
+# function copied from
+# https://pytorch.org/vision/stable/_modules/torchvision/transforms/autoaugment.html#TrivialAugmentWide
+# and adapted
 class TrivialAugmentWideNoColor(transforms.TrivialAugmentWide):
     def _augmentation_space(self, num_bins: int) -> Dict[str, Tuple[Tensor, bool]]:
         return {

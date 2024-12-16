@@ -17,16 +17,12 @@ model_dir = "./pretrained_models"
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
-    return nn.Conv2d(
-        in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False
-    )
+    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
 
 
 def conv3x3_nopad(in_planes, out_planes, stride=1):
     """3x3 convolution without padding"""
-    return nn.Conv2d(
-        in_planes, out_planes, kernel_size=3, stride=stride, padding=0, bias=False
-    )
+    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=0, bias=False)
 
 
 def conv1x1(in_planes, out_planes, stride=1):
@@ -153,18 +149,10 @@ class ResNet_features(nn.Module):
         # the following layers, each layer is a sequence of blocks
         self.block = block
         self.layers = layers
-        self.layer1 = self._make_layer(
-            block=block, planes=64, num_blocks=self.layers[0]
-        )
-        self.layer2 = self._make_layer(
-            block=block, planes=128, num_blocks=self.layers[1], stride=2
-        )
-        self.layer3 = self._make_layer(
-            block=block, planes=256, num_blocks=self.layers[2], stride=1
-        )
-        self.layer4 = self._make_layer(
-            block=block, planes=512, num_blocks=self.layers[3], stride=1
-        )
+        self.layer1 = self._make_layer(block=block, planes=64, num_blocks=self.layers[0])
+        self.layer2 = self._make_layer(block=block, planes=128, num_blocks=self.layers[1], stride=2)
+        self.layer3 = self._make_layer(block=block, planes=256, num_blocks=self.layers[2], stride=1)
+        self.layer4 = self._make_layer(block=block, planes=512, num_blocks=self.layers[3], stride=1)
 
         # initialize the parameters
         for m in self.modules():
@@ -202,9 +190,7 @@ class ResNet_features(nn.Module):
 
         # keep track of every block's conv size, stride size, and padding size
         for each_block in layers:
-            block_kernel_sizes, block_strides, block_paddings = (
-                each_block.block_conv_info()
-            )
+            block_kernel_sizes, block_strides, block_paddings = each_block.block_conv_info()
             self.kernel_sizes.extend(block_kernel_sizes)
             self.strides.extend(block_strides)
             self.paddings.extend(block_paddings)
@@ -297,7 +283,8 @@ def resnet50_features_inat(pretrained=False, **kwargs):
     """
     model = ResNet_features(Bottleneck, [3, 4, 6, 3], **kwargs)
     if pretrained:
-        # use BBN pretrained weights of the conventional learning branch (from BBN.iNaturalist2017.res50.180epoch.best_model.pth)
+        # use BBN pretrained weights of the conventional learning branch
+        # (from BBN.iNaturalist2017.res50.180epoch.best_model.pth)
         # https://openaccess.thecvf.com/content_CVPR_2020/papers/Zhou_BBN_Bilateral-Branch_Network_With_Cumulative_Learning_for_Long-Tailed_Visual_Recognition_CVPR_2020_paper.pdf
         if not os.path.exists(
             os.path.join(
@@ -306,7 +293,10 @@ def resnet50_features_inat(pretrained=False, **kwargs):
             )
         ):
             print(
-                "To use Resnet50 pretrained on iNaturalist, create a folder called state_dicts in the folder features, and download BBN.iNaturalist2017.res50.180epoch.best_model.pth to there from https://drive.google.com/drive/folders/1yHme1iFQy-Lz_11yZJPlNd9bO_YPKlEU.",
+                "To use Resnet50 pretrained on iNaturalist,"
+                " create a folder called state_dicts in the folder features,"
+                " and download BBN.iNaturalist2017.res50.180epoch.best_model.pth to there from"
+                " https://drive.google.com/drive/folders/1yHme1iFQy-Lz_11yZJPlNd9bO_YPKlEU.",
                 flush=True,
             )
         model_dict = torch.load(

@@ -37,9 +37,7 @@ for k in range(num):
     if int(split[k][0][-1]) == 1:
         if not os.path.isdir(train_save_path + file_name):
             os.makedirs(os.path.join(train_save_path, file_name))
-        img = Image.open(
-            os.path.join(os.path.join(path, "images"), images[k][0].split(" ")[1])
-        ).convert("RGB")
+        img = Image.open(os.path.join(os.path.join(path, "images"), images[k][0].split(" ")[1])).convert("RGB")
         x, y, w, h = bboxes[id]
         cropped_img = img.crop((x, y, x + w, y + h))
         cropped_img.save(
@@ -52,9 +50,7 @@ for k in range(num):
     else:
         if not os.path.isdir(test_save_path + file_name):
             os.makedirs(os.path.join(test_save_path, file_name))
-        img = Image.open(
-            os.path.join(os.path.join(path, "images"), images[k][0].split(" ")[1])
-        ).convert("RGB")
+        img = Image.open(os.path.join(os.path.join(path, "images"), images[k][0].split(" ")[1])).convert("RGB")
         x, y, w, h = bboxes[id]
         cropped_img = img.crop((x, y, x + w, y + h))
         cropped_img.save(
@@ -76,9 +72,7 @@ for k in range(num):
     if int(split[k][0][-1]) == 1:
         if not os.path.isdir(train_save_path + file_name):
             os.makedirs(os.path.join(train_save_path, file_name))
-        img = Image.open(
-            os.path.join(os.path.join(path, "images"), images[k][0].split(" ")[1])
-        ).convert("RGB")
+        img = Image.open(os.path.join(os.path.join(path, "images"), images[k][0].split(" ")[1])).convert("RGB")
         width, height = img.size
 
         img.save(

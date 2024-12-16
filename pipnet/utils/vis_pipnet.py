@@ -11,9 +11,7 @@ import random
 
 
 @torch.no_grad()
-def visualize_topk(
-    net, projectloader, num_classes, device, foldername, args: argparse.Namespace, k=10
-):
+def visualize_topk(net, projectloader, num_classes, device, foldername, args: argparse.Namespace, k=10):
     print("Visualizing prototypes for topk...", flush=True)
     dir = os.path.join(args.log_dir, foldername)
     if not os.path.exists(dir):
@@ -66,22 +64,20 @@ def visualize_topk(
 
             for p in range(pooled.shape[0]):
                 c_weight = torch.max(classification_weights[:, p])
-                if (
-                    c_weight > 1e-3
-                ):  # ignore prototypes that are not relevant to any class
+                if c_weight > 1e-3:  # ignore prototypes that are not relevant to any class
                     if p not in topks.keys():
                         topks[p] = []
 
                     if len(topks[p]) < k:
                         topks[p].append((i, pooled[p].item()))
                     else:
-                        topks[p] = sorted(
-                            topks[p], key=lambda tup: tup[1], reverse=True
-                        )
+                        topks[p] = sorted(topks[p], key=lambda tup: tup[1], reverse=True)
                         if topks[p][-1][1] < pooled[p].item():
                             topks[p][-1] = (i, pooled[p].item())
                         if topks[p][-1][1] == pooled[p].item():
-                            # equal scores. randomly chose one (since dataset is not shuffled so latter images with same scores can now also get in topk).
+                            # equal scores.
+                            # randomly chose one
+                            # (since dataset is not shuffled so latter images with same scores can now also get in topk)
                             replace_choice = random.choice([0, 1])
                             if replace_choice > 0:
                                 topks[p][-1] = (i, pooled[p].item())
@@ -125,21 +121,15 @@ def visualize_topk(
                                 softmaxes, pooled, out = net(
                                     xs, inference=True
                                 )  # softmaxes has shape (1, num_prototypes, W, H)
-                                outmax = torch.amax(
-                                    out, dim=1
-                                )[
+                                outmax = torch.amax(out, dim=1)[
                                     0
                                 ]  # shape ([1]) because batch size of projectloader is 1
                                 if outmax.item() == 0.0:
                                     abstained += 1
 
                             # Take the max per prototype.
-                            max_per_prototype, max_idx_per_prototype = torch.max(
-                                softmaxes, dim=0
-                            )
-                            max_per_prototype_h, max_idx_per_prototype_h = torch.max(
-                                max_per_prototype, dim=1
-                            )
+                            max_per_prototype, max_idx_per_prototype = torch.max(softmaxes, dim=0)
+                            max_per_prototype_h, max_idx_per_prototype_h = torch.max(max_per_prototype, dim=1)
                             max_per_prototype_w, max_idx_per_prototype_w = torch.max(
                                 max_per_prototype_h, dim=1
                             )  # shape (num_prototypes)
@@ -148,9 +138,7 @@ def visualize_topk(
                                 classification_weights[:, p]
                             )  # ignore prototypes that are not relevant to any class
                             if (c_weight > 1e-10) or ("pretrain" in foldername):
-                                h_idx = max_idx_per_prototype_h[
-                                    p, max_idx_per_prototype_w[p]
-                                ]
+                                h_idx = max_idx_per_prototype_h[p, max_idx_per_prototype_w[p]]
                                 w_idx = max_idx_per_prototype_w[p]
 
                                 img_to_open = imgs[i]
@@ -159,25 +147,19 @@ def visualize_topk(
                                 ):  # dataset contains tuples of (img,label)
                                     img_to_open = img_to_open[0]
 
-                                image = transforms.Resize(
-                                    size=(args.image_size, args.image_size)
-                                )(Image.open(img_to_open))
-                                img_tensor = transforms.ToTensor()(image).unsqueeze_(
-                                    0
-                                )  # shape (1, 3, h, w)
-                                h_coor_min, h_coor_max, w_coor_min, w_coor_max = (
-                                    get_img_coordinates(
-                                        args.image_size,
-                                        softmaxes.shape,
-                                        patchsize,
-                                        skip,
-                                        h_idx,
-                                        w_idx,
-                                    )
+                                image = transforms.Resize(size=(args.image_size, args.image_size))(
+                                    Image.open(img_to_open)
                                 )
-                                img_tensor_patch = img_tensor[
-                                    0, :, h_coor_min:h_coor_max, w_coor_min:w_coor_max
-                                ]
+                                img_tensor = transforms.ToTensor()(image).unsqueeze_(0)  # shape (1, 3, h, w)
+                                h_coor_min, h_coor_max, w_coor_min, w_coor_max = get_img_coordinates(
+                                    args.image_size,
+                                    softmaxes.shape,
+                                    patchsize,
+                                    skip,
+                                    h_idx,
+                                    w_idx,
+                                )
+                                img_tensor_patch = img_tensor[0, :, h_coor_min:h_coor_max, w_coor_min:w_coor_max]
 
                                 saved[p] += 1
                                 tensors_per_prototype[p].append(img_tensor_patch)
@@ -188,9 +170,7 @@ def visualize_topk(
         if saved[p] > 0:
             # add text next to each topk-grid, to easily see which prototype it is
             text = "P " + str(p)
-            txtimage = Image.new(
-                "RGB", (img_tensor_patch.shape[1], img_tensor_patch.shape[2]), (0, 0, 0)
-            )
+            txtimage = Image.new("RGB", (img_tensor_patch.shape[1], img_tensor_patch.shape[2]), (0, 0, 0))
             draw = D.Draw(txtimage)
             draw.text(
                 (img_tensor_patch.shape[0] // 2, img_tensor_patch.shape[1] // 2),
@@ -202,12 +182,8 @@ def visualize_topk(
             tensors_per_prototype[p].append(txttensor)
             # save top-k image patches in grid
             try:
-                grid = torchvision.utils.make_grid(
-                    tensors_per_prototype[p], nrow=k + 1, padding=1
-                )
-                torchvision.utils.save_image(
-                    grid, os.path.join(dir, "grid_topk_%s.png" % (str(p)))
-                )
+                grid = torchvision.utils.make_grid(tensors_per_prototype[p], nrow=k + 1, padding=1)
+                torchvision.utils.save_image(grid, os.path.join(dir, "grid_topk_%s.png" % (str(p))))
                 if saved[p] >= k:
                     all_tensors += tensors_per_prototype[p]
             except Exception as e:
@@ -217,15 +193,11 @@ def visualize_topk(
         grid = torchvision.utils.make_grid(all_tensors, nrow=k + 1, padding=1)
         torchvision.utils.save_image(grid, os.path.join(dir, "grid_topk_all.png"))
     else:
-        print(
-            "Pretrained prototypes not visualized. Try to pretrain longer.", flush=True
-        )
+        print("Pretrained prototypes not visualized. Try to pretrain longer.", flush=True)
     return topks
 
 
-def visualize(
-    net, projectloader, num_classes, device, foldername, args: argparse.Namespace
-):
+def visualize(net, projectloader, num_classes, device, foldername, args: argparse.Namespace):
     print("Visualizing prototypes...", flush=True)
     dir = os.path.join(args.log_dir, foldername)
     if not os.path.exists(dir):
@@ -294,16 +266,10 @@ def visualize(
 
         max_per_prototype, max_idx_per_prototype = torch.max(softmaxes, dim=0)
         # In PyTorch, images are represented as [channels, height, width]
-        max_per_prototype_h, max_idx_per_prototype_h = torch.max(
-            max_per_prototype, dim=1
-        )
-        max_per_prototype_w, max_idx_per_prototype_w = torch.max(
-            max_per_prototype_h, dim=1
-        )
+        max_per_prototype_h, max_idx_per_prototype_h = torch.max(max_per_prototype, dim=1)
+        max_per_prototype_w, max_idx_per_prototype_w = torch.max(max_per_prototype_h, dim=1)
         for p in range(0, net.module._num_prototypes):
-            c_weight = torch.max(
-                classification_weights[:, p]
-            )  # ignore prototypes that are not relevant to any class
+            c_weight = torch.max(classification_weights[:, p])  # ignore prototypes that are not relevant to any class
             if c_weight > 0:
                 h_idx = max_idx_per_prototype_h[p, max_idx_per_prototype_w[p]]
                 w_idx = max_idx_per_prototype_w[p]
@@ -330,22 +296,16 @@ def visualize(
                     image = transforms.Resize(size=(args.image_size, args.image_size))(
                         Image.open(img_to_open).convert("RGB")
                     )
-                    img_tensor = transforms.ToTensor()(image).unsqueeze_(
-                        0
-                    )  # shape (1, 3, h, w)
-                    h_coor_min, h_coor_max, w_coor_min, w_coor_max = (
-                        get_img_coordinates(
-                            args.image_size,
-                            softmaxes.shape,
-                            patchsize,
-                            skip,
-                            h_idx,
-                            w_idx,
-                        )
+                    img_tensor = transforms.ToTensor()(image).unsqueeze_(0)  # shape (1, 3, h, w)
+                    h_coor_min, h_coor_max, w_coor_min, w_coor_max = get_img_coordinates(
+                        args.image_size,
+                        softmaxes.shape,
+                        patchsize,
+                        skip,
+                        h_idx,
+                        w_idx,
                     )
-                    img_tensor_patch = img_tensor[
-                        0, :, h_coor_min:h_coor_max, w_coor_min:w_coor_max
-                    ]
+                    img_tensor_patch = img_tensor[0, :, h_coor_min:h_coor_max, w_coor_min:w_coor_max]
                     saved[p] += 1
                     tensors_per_prototype[p].append((img_tensor_patch, found_max))
 
@@ -378,14 +338,10 @@ def visualize(
     for p in range(net.module._num_prototypes):
         if saved[p] > 0:
             try:
-                sorted_by_second = sorted(
-                    tensors_per_prototype[p], key=lambda tup: tup[1], reverse=True
-                )
+                sorted_by_second = sorted(tensors_per_prototype[p], key=lambda tup: tup[1], reverse=True)
                 sorted_ps = [i[0] for i in sorted_by_second]
                 grid = torchvision.utils.make_grid(sorted_ps, nrow=16, padding=1)
-                torchvision.utils.save_image(
-                    grid, os.path.join(dir, "grid_%s.png" % (str(p)))
-                )
+                torchvision.utils.save_image(grid, os.path.join(dir, "grid_%s.png" % (str(p))))
             except RuntimeError:
                 pass
 
@@ -394,7 +350,8 @@ def visualize(
 def get_img_coordinates(img_size, softmaxes_shape, patchsize, skip, h_idx, w_idx):
     # in case latent output size is 26x26. For convnext with smaller strides.
     if softmaxes_shape[1] == 26 and softmaxes_shape[2] == 26:
-        # Since the outer latent patches have a smaller receptive field, skip size is set to 4 for the first and last patch. 8 for rest.
+        # Since the outer latent patches have a smaller receptive field,
+        # skip size is set to 4 for the first and last patch. 8 for rest.
         h_coor_min = max(0, (h_idx - 1) * skip + 4)
         if h_idx < softmaxes_shape[-1] - 1:
             h_coor_max = h_coor_min + patchsize

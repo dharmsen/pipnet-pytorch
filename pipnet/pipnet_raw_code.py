@@ -82,12 +82,8 @@ class NonNegLinear(nn.Module):
         super(NonNegLinear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = nn.Parameter(
-            torch.empty((out_features, in_features), **factory_kwargs)
-        )
-        self.normalization_multiplier = nn.Parameter(
-            torch.ones((1,), requires_grad=True)
-        )
+        self.weight = nn.Parameter(torch.empty((out_features, in_features), **factory_kwargs))
+        self.normalization_multiplier = nn.Parameter(torch.ones((1,), requires_grad=True))
         if bias:
             self.bias = nn.Parameter(torch.empty(out_features, **factory_kwargs))
         else:
@@ -98,16 +94,12 @@ class NonNegLinear(nn.Module):
 
 
 def get_network(num_classes: int, args: argparse.Namespace):
-    features = base_architecture_to_features[args.net](
-        pretrained=not args.disable_pretrained
-    )
+    features = base_architecture_to_features[args.net](pretrained=not args.disable_pretrained)
     features_name = str(features).upper()
     if "next" in args.net:
         features_name = str(args.net).upper()
     if features_name.startswith("RES") or features_name.startswith("CONVNEXT"):
-        first_add_on_layer_in_channels = [
-            i for i in features.modules() if isinstance(i, nn.Conv2d)
-        ][-1].out_channels
+        first_add_on_layer_in_channels = [i for i in features.modules() if isinstance(i, nn.Conv2d)][-1].out_channels
     else:
         raise Exception("other base architecture NOT implemented")
 
@@ -116,7 +108,8 @@ def get_network(num_classes: int, args: argparse.Namespace):
         print("Number of prototypes: ", num_prototypes, flush=True)
         add_on_layers = nn.Sequential(
             nn.Softmax(dim=1),
-            # softmax over every prototype for each patch, such that for every location in image, sum over prototypes is 1
+            # softmax over every prototype for each patch,
+            # such that for every location in image, sum over prototypes is 1
         )
     else:
         num_prototypes = args.num_features
@@ -138,7 +131,8 @@ def get_network(num_classes: int, args: argparse.Namespace):
                 bias=True,
             ),
             nn.Softmax(dim=1),
-            # softmax over every prototype for each patch, such that for every location in image, sum over prototypes is 1
+            # softmax over every prototype for each patch,
+            # such that for every location in image, sum over prototypes is 1
         )
     pool_layer = nn.Sequential(
         nn.AdaptiveMaxPool2d(output_size=(1, 1)),  # outputs (bs, ps,1,1)

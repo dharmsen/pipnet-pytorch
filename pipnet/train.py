@@ -135,9 +135,7 @@ def train_pipnet(
                     )
                 )
                 if net.module._classification.bias is not None:
-                    net.module._classification.bias.copy_(
-                        torch.clamp(net.module._classification.bias.data, min=0.0)
-                    )
+                    net.module._classification.bias.copy_(torch.clamp(net.module._classification.bias.data, min=0.0))
     train_info["train_accuracy"] = total_acc / float(i + 1)
     train_info["loss"] = total_loss / float(i + 1)
     train_info["lrs_net"] = lrs_net
@@ -170,9 +168,7 @@ def calculate_loss(
     embv2 = pf2.flatten(start_dim=2).permute(0, 2, 1).flatten(end_dim=1)
     embv1 = pf1.flatten(start_dim=2).permute(0, 2, 1).flatten(end_dim=1)
 
-    a_loss_pf = (
-        align_loss(embv1, embv2.detach()) + align_loss(embv2, embv1.detach())
-    ) / 2.0
+    a_loss_pf = (align_loss(embv1, embv2.detach()) + align_loss(embv2, embv1.detach())) / 2.0
     tanh_loss = (
         -(
             torch.log(torch.tanh(torch.sum(pooled1, dim=0)) + EPS).mean()
@@ -187,13 +183,17 @@ def calculate_loss(
 
     if not pretrain:
         softmax_inputs = torch.log1p(out**net_normalization_multiplier)
-        class_loss = criterion(F.log_softmax((softmax_inputs), dim=1), ys)
+        class_loss = criterion(F.log_softmax(softmax_inputs, dim=1), ys)
 
         if finetune:
             loss = cl_weight * class_loss
         else:
             loss += cl_weight * class_loss
-    # Our tanh-loss optimizes for uniformity and was sufficient for our experiments. However, if pretraining of the prototypes is not working well for your dataset, you may try to add another uniformity loss from https://www.tongzhouwang.info/hypersphere/ Just uncomment the following three lines
+
+    # Our tanh-loss optimizes for uniformity and was sufficient for our experiments.
+    # However, if pretraining of the prototypes is not working well for your dataset,
+    # you may try to add another uniformity loss from https://www.tongzhouwang.info/hypersphere/
+    # Just uncomment the following three lines
     # else:
     #     uni_loss = (uniform_loss(F.normalize(pooled1+EPS,dim=1)) + uniform_loss(F.normalize(pooled2+EPS,dim=1)))/2.
     #     loss += unif_weight * uni_loss
@@ -207,26 +207,40 @@ def calculate_loss(
         with torch.no_grad():
             if pretrain:
                 train_iter.set_postfix_str(
-                    f"L: {loss.item():.3f}, LA:{a_loss_pf.item():.2f}, LT:{tanh_loss.item():.3f}, num_scores>0.1:{torch.count_nonzero(torch.relu(pooled - 0.1), dim=1).float().mean().item():.1f}",
+                    f"L: {loss.item():.3f}, LA:{a_loss_pf.item():.2f},"
+                    f" LT:{tanh_loss.item():.3f},"
+                    f" num_scores>0.1:{torch.count_nonzero(torch.relu(pooled - 0.1), dim=1).float().mean().item():.1f}",
                     refresh=False,
                 )
             else:
                 if finetune:
                     train_iter.set_postfix_str(
-                        f"L:{loss.item():.3f},LC:{class_loss.item():.3f}, LA:{a_loss_pf.item():.2f}, LT:{tanh_loss.item():.3f}, num_scores>0.1:{torch.count_nonzero(torch.relu(pooled - 0.1), dim=1).float().mean().item():.1f}, Ac:{acc:.3f}",
+                        f"L:{loss.item():.3f},"
+                        f"LC:{class_loss.item():.3f}, LA:{a_loss_pf.item():.2f}, LT:{tanh_loss.item():.3f},"
+                        f"num_scores>0.1:"
+                        f"{torch.count_nonzero(torch.relu(pooled - 0.1), dim=1).float().mean().item():.1f},"
+                        f"Ac:{acc:.3f}",
                         refresh=False,
                     )
                 else:
                     train_iter.set_postfix_str(
-                        f"L:{loss.item():.3f},LC:{class_loss.item():.3f}, LA:{a_loss_pf.item():.2f}, LT:{tanh_loss.item():.3f}, num_scores>0.1:{torch.count_nonzero(torch.relu(pooled - 0.1), dim=1).float().mean().item():.1f}, Ac:{acc:.3f}",
+                        f"L:{loss.item():.3f},"
+                        f"LC:{class_loss.item():.3f},"
+                        f" LA:{a_loss_pf.item():.2f},"
+                        f" LT:{tanh_loss.item():.3f},"
+                        f" num_scores>0.1:"
+                        f"{torch.count_nonzero(torch.relu(pooled - 0.1), dim=1).float().mean().item():.1f},"
+                        f" Ac:{acc:.3f}",
                         refresh=False,
                     )
     return loss, acc
 
 
-# Extra uniform loss from https://www.tongzhouwang.info/hypersphere/. Currently not used but you could try adding it if you want.
+# Extra uniform loss from https://www.tongzhouwang.info/hypersphere/.
+# Currently not used but you could try adding it if you want.
 def uniform_loss(x, t=2):
-    # print("sum elements: ", torch.sum(torch.pow(x,2), dim=1).shape, torch.sum(torch.pow(x,2), dim=1)) #--> should be ones
+    # print("sum elements: ", torch.sum(torch.pow(x,2), dim=1).shape,
+    # torch.sum(torch.pow(x,2), dim=1)) #--> should be ones
     loss = (torch.pdist(x, p=2).pow(2).mul(-t).exp().mean() + 1e-10).log()
     return loss
 

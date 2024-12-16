@@ -24,19 +24,33 @@ def get_args() -> argparse.Namespace:
         "--validation_size",
         type=float,
         default=0.0,
-        help="Split between training and validation set. Can be zero when there is a separate test or validation directory. Should be between 0 and 1. Used for partimagenet (e.g. 0.2)",
+        help="Split between training and validation set."
+        " Can be zero when there is a separate test or validation directory."
+        " Should be between 0 and 1. Used for partimagenet (e.g. 0.2)",
     )
     parser.add_argument(
         "--net",
         type=str,
         default="convnext_tiny_26",
-        help="Base network used as backbone of PIP-Net. Default is convnext_tiny_26 with adapted strides to output 26x26 latent representations. Other option is convnext_tiny_13 that outputs 13x13 (smaller and faster to train, less fine-grained). Pretrained network on iNaturalist is only available for resnet50_inat. Options are: resnet18, resnet34, resnet50, resnet50_inat, resnet101, resnet152, convnext_tiny_26 and convnext_tiny_13.",
+        help="Base network used as backbone of PIP-Net."
+        "Default is convnext_tiny_26 with adapted strides to output 26x26 latent representations."
+        " Other option is convnext_tiny_13 that outputs 13x13 (smaller and faster to train, less fine-grained)."
+        " Pretrained network on iNaturalist is only available for resnet50_inat."
+        " Options are:"
+        " resnet18,"
+        " resnet34,"
+        " resnet50,"
+        " resnet50_inat,"
+        " resnet101,"
+        " resnet152,"
+        " convnext_tiny_26 and convnext_tiny_13.",
     )
     parser.add_argument(
         "--batch_size",
         type=int,
         default=64,
-        help="Batch size when training the model using minibatch gradient descent. Batch size is multiplied with number of available GPUs",
+        help="Batch size when training the model using minibatch gradient descent."
+        " Batch size is multiplied with number of available GPUs",
     )
     parser.add_argument(
         "--batch_size_pretrain",
@@ -54,7 +68,8 @@ def get_args() -> argparse.Namespace:
         "--epochs_pretrain",
         type=int,
         default=10,
-        help="Number of epochs to pre-train the prototypes (first training stage). Recommended to train at least until the align loss < 1",
+        help="Number of epochs to pre-train the prototypes (first training stage)."
+        " Recommended to train at least until the align loss < 1",
     )
     parser.add_argument(
         "--optimizer",
@@ -101,25 +116,31 @@ def get_args() -> argparse.Namespace:
         "--num_features",
         type=int,
         default=0,
-        help="Number of prototypes. When zero (default) the number of prototypes is the number of output channels of backbone. If this value is set, then a 1x1 conv layer will be added. Recommended to keep 0, but can be increased when number of classes > num output channels in backbone.",
+        help="Number of prototypes. When zero (default)"
+        " the number of prototypes is the number of output channels of backbone."
+        " If this value is set, then a 1x1 conv layer will be added."
+        " Recommended to keep 0, but can be increased when number of classes > num output channels in backbone.",
     )
     parser.add_argument(
         "--image_size",
         type=int,
         default=224,
-        help="Input images will be resized to --image_size x --image_size (square). Code only tested with 224x224, so no guarantees that it works for different sizes.",
+        help="Input images will be resized to --image_size x --image_size (square)."
+        " Code only tested with 224x224, so no guarantees that it works for different sizes.",
     )
     parser.add_argument(
         "--state_dict_dir_net",
         type=str,
         default="",
-        help="The directory containing a state dict with a pretrained PIP-Net. E.g., ./runs/run_pipnet/checkpoints/net_pretrained",
+        help="The directory containing a state dict with a pretrained PIP-Net."
+        " E.g., ./runs/run_pipnet/checkpoints/net_pretrained",
     )
     parser.add_argument(
         "--freeze_epochs",
         type=int,
         default=10,
-        help="Number of epochs where pretrained features_net will be frozen while training classification layer (and last layer(s) of backbone)",
+        help="Number of epochs where pretrained features_net will be frozen while training classification layer"
+        " (and last layer(s) of backbone)",
     )
     parser.add_argument(
         "--dir_for_saving_images",
@@ -130,25 +151,24 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "--disable_pretrained",
         action="store_true",
-        help="When set, the backbone network is initialized with random weights instead of being pretrained on another dataset).",
+        help="When set, the backbone network is initialized"
+        " with random weights instead of being pretrained on another dataset).",
     )
     parser.add_argument(
         "--weighted_loss",
         action="store_true",
-        help="Flag that weights the loss based on the class balance of the dataset. Recommended to use when data is imbalanced. ",
+        help="Flag that weights the loss based on the class balance of the dataset."
+        " Recommended to use when data is imbalanced. ",
     )
     parser.add_argument(
         "--seed",
         type=int,
         default=1,
-        help="Random seed. Note that there will still be differences between runs due to nondeterminism. See https://pytorch.org/docs/stable/notes/randomness.html",
+        help="Random seed. Note that there will still be differences between runs due to nondeterminism."
+        " See https://pytorch.org/docs/stable/notes/randomness.html",
     )
-    parser.add_argument(
-        "--gpu_ids", type=str, default="", help="ID of gpu. Can be separated with comma"
-    )
-    parser.add_argument(
-        "--num_workers", type=int, default=8, help="Num workers in dataloaders."
-    )
+    parser.add_argument("--gpu_ids", type=str, default="", help="ID of gpu. Can be separated with comma")
+    parser.add_argument("--num_workers", type=int, default=8, help="Num workers in dataloaders.")
     parser.add_argument(
         "--bias",
         action="store_true",
@@ -158,7 +178,9 @@ def get_args() -> argparse.Namespace:
         "--extra_test_image_folder",
         type=str,
         default="./experiments",
-        help="Folder with images that PIP-Net will predict and explain, that are not in the training or test set. E.g. images with 2 objects or OOD image. Images should be in subfolder. E.g. images in ./experiments/images/, and argument --./experiments",
+        help="Folder with images that PIP-Net will predict and explain,"
+        " that are not in the training or test set. E.g. images with 2 objects or OOD image."
+        " Images should be in subfolder. E.g. images in ./experiments/images/, and argument --./experiments",
     )
 
     args = parser.parse_args()
@@ -184,9 +206,7 @@ def save_args(args: argparse.Namespace, directory_path: str) -> None:
     with open(directory_path + "/args.txt", "w") as f:
         for arg in vars(args):
             val = getattr(args, arg)
-            if isinstance(
-                val, str
-            ):  # Add quotation marks to indicate that the argument is of string type
+            if isinstance(val, str):  # Add quotation marks to indicate that the argument is of string type
                 val = f"'{val}'"
             f.write("{}: {}\n".format(arg, val))
     # Pickle the args for possible reuse
@@ -278,12 +298,8 @@ def get_optimizer_nn(net, args: argparse.Namespace) -> torch.optim.Optimizer:
     ]
 
     if args.optimizer == "Adam":
-        optimizer_net = torch.optim.AdamW(
-            paramlist_net, lr=args.lr, weight_decay=args.weight_decay
-        )
-        optimizer_classifier = torch.optim.AdamW(
-            paramlist_classifier, lr=args.lr, weight_decay=args.weight_decay
-        )
+        optimizer_net = torch.optim.AdamW(paramlist_net, lr=args.lr, weight_decay=args.weight_decay)
+        optimizer_classifier = torch.optim.AdamW(paramlist_classifier, lr=args.lr, weight_decay=args.weight_decay)
         return (
             optimizer_net,
             optimizer_classifier,
