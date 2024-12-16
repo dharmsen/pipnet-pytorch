@@ -1,6 +1,9 @@
 # pipnet-pytorch
 PIP-net (CVPR 2023) PyTorch extension 
 ---
+
+Making this paper more accessible through this extension. 
+
 ```
 @inproceedings{nauta2023pip,
   title={Pip-net: Patch-based intuitive prototypes for interpretable image classification},
