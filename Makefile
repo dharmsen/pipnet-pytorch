@@ -1,13 +1,12 @@
-
-
+setup:
+		pip install uv
+		uv pip install -r reqs.txt
 
 unit-test:
-	pytest tests/
-
+		pytest tests/
 
 format:
-	ruff format
-
+		ruff format
 
 check:
-	ruff check
+		ruff check
