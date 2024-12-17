@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from util.args import save_args
+from args import save_args
 
 
 class Log:
