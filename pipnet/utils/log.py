@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from args import save_args
+from pipnet.utils.args import save_args
 
 
 class Log:

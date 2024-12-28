@@ -4,8 +4,8 @@ import torch
 import torch.optim
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
-from utils.log import Log
-from utils.func import topk_accuracy
+from pipnet.utils.log import Log
+from pipnet.utils.func import topk_accuracy
 from sklearn.metrics import (
     roc_auc_score,
     balanced_accuracy_score,

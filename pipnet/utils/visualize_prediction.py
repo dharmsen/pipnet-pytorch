@@ -3,10 +3,10 @@ import shutil
 import argparse
 from PIL import Image, ImageDraw as D
 import torchvision
-from func import get_patch_size
+from pipnet.utils.func import get_patch_size
 from torchvision import transforms
 import torch
-from vis_pipnet import get_img_coordinates
+from pipnet.utils.vis_pipnet import get_img_coordinates
 import matplotlib.pyplot as plt
 import numpy as np
 

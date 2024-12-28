@@ -5,8 +5,8 @@ import os
 from PIL import Image
 from tqdm import tqdm
 import torch
-from func import get_patch_size
-from vis_pipnet import get_img_coordinates
+from pipnet.utils.func import get_patch_size
+from pipnet.utils.vis_pipnet import get_img_coordinates
 
 
 # Evaluates purity of CUB prototypes from csv file.

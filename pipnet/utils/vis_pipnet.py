@@ -6,7 +6,7 @@ import os
 from PIL import Image, ImageDraw as D
 import torchvision.transforms as transforms
 import torchvision
-from util.func import get_patch_size
+from pipnet.utils.func import get_patch_size
 import random
 
 

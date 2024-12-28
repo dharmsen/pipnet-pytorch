@@ -1,20 +1,15 @@
 import argparse
 import torch.nn as nn
 import torch.nn.functional as F
-from features.resnet_features import (
-    resnet18_features,
-    resnet34_features,
-    resnet50_features,
-    resnet50_features_inat,
-    resnet101_features,
-    resnet152_features,
-)
-from features.convnext_features import (
+from pipnet.features.convnext_features import (
     convnext_tiny_26_features,
     convnext_tiny_13_features,
 )
 import torch
 from torch import Tensor
+
+from pipnet.features.resnet_features import resnet18_features, resnet34_features, resnet50_features, \
+    resnet50_features_inat, resnet101_features, resnet152_features
 
 
 class PIPNet(nn.Module):
